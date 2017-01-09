@@ -73,55 +73,58 @@ class Media(ApiModel):
     @classmethod
     def object_from_dictionary(cls, entry):
         new_media = Media(id=entry['id'])
-        new_media.type = entry['type']
+        try:
+            new_media.type = entry['type']
 
-        new_media.user = User.object_from_dictionary(entry['user'])
+            new_media.user = User.object_from_dictionary(entry['user'])
 
-        new_media.images = {}
-        for version, version_info in six.iteritems(entry['images']):
-            new_media.images[version] = Image.object_from_dictionary(version_info)
+            new_media.images = {}
+            for version, version_info in six.iteritems(entry['images']):
+                new_media.images[version] = Image.object_from_dictionary(version_info)
 
-        if new_media.type == 'video':
-            new_media.videos = {}
-            for version, version_info in six.iteritems(entry['videos']):
-                new_media.videos[version] = Video.object_from_dictionary(version_info)
+            if new_media.type == 'video':
+                new_media.videos = {}
+                for version, version_info in six.iteritems(entry['videos']):
+                    new_media.videos[version] = Video.object_from_dictionary(version_info)
 
-        if 'user_has_liked' in entry:
-            new_media.user_has_liked = entry['user_has_liked']
-        new_media.like_count = entry['likes']['count']
-        new_media.likes = []
-        if 'data' in entry['likes']:
-            for like in entry['likes']['data']:
-                new_media.likes.append(User.object_from_dictionary(like))
+            if 'user_has_liked' in entry:
+                new_media.user_has_liked = entry['user_has_liked']
+            new_media.like_count = entry['likes']['count']
+            new_media.likes = []
+            if 'data' in entry['likes']:
+                for like in entry['likes']['data']:
+                    new_media.likes.append(User.object_from_dictionary(like))
 
-        new_media.comment_count = entry['comments']['count']
-        new_media.comments = []
-        for comment in entry['comments']['data']:
-            new_media.comments.append(Comment.object_from_dictionary(comment))
+            new_media.comment_count = entry['comments']['count']
+            new_media.comments = []
+            if entry['comments'].has_key("data"):
+                for comment in entry['comments']['data']:
+                    new_media.comments.append(Comment.object_from_dictionary(comment))
 
-        new_media.users_in_photo = []
-        if entry.get('users_in_photo'):
-            for user_in_photo in entry['users_in_photo']:
-                new_media.users_in_photo.append(UserInPhoto.object_from_dictionary(user_in_photo))
+            new_media.users_in_photo = []
+            if entry.get('users_in_photo'):
+                for user_in_photo in entry['users_in_photo']:
+                    new_media.users_in_photo.append(UserInPhoto.object_from_dictionary(user_in_photo))
 
-        new_media.created_time = timestamp_to_datetime(entry['created_time'])
+            new_media.created_time = timestamp_to_datetime(entry['created_time'])
 
-        if entry['location'] and 'id' in entry:
-            new_media.location = Location.object_from_dictionary(entry['location'])
+            if entry['location'] and 'id' in entry:
+                new_media.location = Location.object_from_dictionary(entry['location'])
 
-        new_media.caption = None
-        if entry['caption']:
-            new_media.caption = Comment.object_from_dictionary(entry['caption'])
-        
-        new_media.tags = []
-        if entry['tags']:
-            for tag in entry['tags']:
-                new_media.tags.append(Tag.object_from_dictionary({'name': tag}))
+            new_media.caption = None
+            if entry['caption']:
+                new_media.caption = Comment.object_from_dictionary(entry['caption'])
 
-        new_media.link = entry['link']
+            new_media.tags = []
+            if entry['tags']:
+                for tag in entry['tags']:
+                    new_media.tags.append(Tag.object_from_dictionary({'name': tag}))
 
-        new_media.filter = entry.get('filter')
+            new_media.link = entry['link']
 
+            new_media.filter = entry.get('filter')
+        except Exception, e:
+            pass
         return new_media
 
 
